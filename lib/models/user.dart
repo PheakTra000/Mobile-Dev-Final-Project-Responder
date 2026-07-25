@@ -12,16 +12,21 @@ class User {
   });
 
   static User fromJson(Map<String, dynamic> json) {
-    assert(json['userId'] is int);
-    assert(json['name'] is String);
-    assert(json['email'] is String);
-    assert(json['password'] is String);
-
     return User(
-      name: json['name'],
-      email: json['email'],
-      password: json['password'],
-      userId: json['userId'],
+      userId: json['userId'] as int,
+      name: json['name'] as String,
+      email: json['email'] as String,
+      password: json['password'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'name': name,
+    'email': email,
+    'password': password,
+  };
+
+  @override
+  String toString() => 'User(userId: $userId, name: $name, email: $email)';
 }

@@ -12,25 +12,29 @@ class ExposedPort {
   });
 
   static ExposedPort fromJson(Map<String, dynamic> json) {
-    assert(json['port'] is int);
-    assert(json['serviceType'] is String);
-    assert(json['riskLevel'] is String);
+    final port = json['port'] as int;
+    final serviceType = json['serviceType'] as String;
+    final riskLevelStr = json['riskLevel'] as String;
 
-    RiskLevel level = RiskLevel.values.firstWhere(
-      (e) => e.name == json['riskLevel'],
+    // Parse enum with a fallback to 'low' if unknown
+    final riskLevel = RiskLevel.values.firstWhere(
+      (e) => e.name == riskLevelStr,
+      orElse: () => RiskLevel.low,
     );
 
     return ExposedPort(
-      port: json['port'],
-      serviceType: json['serviceType'],
-      riskLevel: level,
+      port: port,
+      serviceType: serviceType,
+      riskLevel: riskLevel,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    // convert ExposedPort to json
     'port': port,
     'serviceType': serviceType,
     'riskLevel': riskLevel.name,
   };
+
+  @override
+  String toString() => 'ExposedPort(port: $port, serviceType: $serviceType, riskLevel: $riskLevel.name)';
 }
