@@ -13,16 +13,16 @@ class User {
   });
 
   static User fromJson(Map<String, dynamic> json) {
-    assert(json['id'] is String);
+    assert(json['userId'] is int);
     assert(json['name'] is String);
     assert(json['email'] is String);
     assert(json['password'] is String);
 
     return User(
-      name: json['id'],
-      email: json['name'],
+      name: json['name'],
+      email: json['email'],
       password: json['password'],
-      userId: json['id'],
+      userId: json['userId'],
     );
   }
 }
