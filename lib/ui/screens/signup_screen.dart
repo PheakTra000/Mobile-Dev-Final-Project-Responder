@@ -13,16 +13,20 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  // Add a controller for the name field
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+
   final _api = ApiClient.instance;
-  final _storage = FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage();
   String _error = '';
   bool _isLoading = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
@@ -30,11 +34,13 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _register() async {
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmController.text;
 
-    if (email.isEmpty || password.isEmpty || confirm.isEmpty) {
+    // Validation
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
       setState(() => _error = 'All fields are required');
       return;
     }
@@ -53,7 +59,8 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      final token = await _api.register(email, password);
+      // Pass the name to the registration API
+      final token = await _api.register(name, email, password);
       await _storage.write(key: 'jwt', value: token);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/dashboard');
@@ -87,6 +94,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   color: _textPrimary, fontSize: 24, fontWeight: FontWeight.bold,
                 )),
                 const SizedBox(height: 32),
+
+                // --- Name field (new) ---
+                _buildTextField(_nameController, 'Full name'),
+                const SizedBox(height: 16),
+
                 _buildTextField(_emailController, 'Operator@domain.com',
                     keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
@@ -95,6 +107,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(_confirmController, 'Confirm password',
                     obscureText: true),
+
                 if (_error.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),

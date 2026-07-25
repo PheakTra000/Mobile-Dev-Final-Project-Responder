@@ -22,7 +22,7 @@ class AuditSession {
     assert(json['profileName'] is String);
     assert(json['date'] is String);
     assert(json['deviceCount'] is int);
-    assert(json['ScanType'] is String);
+    assert(json['scanType'] is String);
 
     final date = DateTime.parse(json['date'] as String);
 
@@ -43,8 +43,8 @@ class AuditSession {
     //convert AuditSession to json
     'id': id,
     'profileName': profileName,
-    'DateTime': DateTime,
+    'date': date.toIso8601String(),
     'deviceCount': deviceCount,
-    'ScanType': scanType.name,
+    'scanType': scanType.name,
   };
 }
