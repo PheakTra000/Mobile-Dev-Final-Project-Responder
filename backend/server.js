@@ -1,6 +1,9 @@
 require('dotenv').config();
+const { initFirebase } = require('./firebase/firebase_config');
 const express = require('express');
 const cors = require('cors');
+
+initFirebase();
 
 const authRoutes = require('./routes/auth_routes');
 const scanRoutes = require('./routes/scan_routes');
