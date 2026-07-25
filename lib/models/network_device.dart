@@ -2,25 +2,31 @@ class NetworkDevice {
   final String ip;
   final String mac;
   final String hostname;
+  final String deviceType;
 
-  NetworkDevice({required this.ip, required this.mac, required this.hostname});
+  NetworkDevice({
+    required this.ip,
+    required this.mac,
+    required this.hostname,
+    this.deviceType = 'Unknown',
+  });
 
   static NetworkDevice fromJson(Map<String, dynamic> json) {
-    assert(json['ip'] is String);
-    assert(json['mac'] is String);
-    assert(json['hostname'] is String);
-
     return NetworkDevice(
-      ip: json['ip'],
-      mac: json['mac'],
-      hostname: json['hostname'],
+      ip: json['ip'] as String,
+      mac: json['mac'] as String,
+      hostname: json['hostname'] as String,
+      deviceType: json['deviceType'] as String? ?? 'Unknown',
     );
   }
 
   Map<String, dynamic> toJson() => {
-    // convert NetworkDevice to json
     'ip': ip,
     'mac': mac,
     'hostname': hostname,
+    'deviceType': deviceType,
   };
+
+  @override
+  String toString() => 'NetworkDevice(ip: $ip, mac: $mac, hostname: $hostname, deviceType: $deviceType)';
 }

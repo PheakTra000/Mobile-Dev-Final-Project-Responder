@@ -5,4 +5,5 @@ class AuthSession {
   final User user;
 
   AuthSession({required this.token, required this.user});
+
 }

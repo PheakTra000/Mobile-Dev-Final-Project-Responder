@@ -6,6 +6,9 @@ class AuditSession {
   final DateTime date;
   final int deviceCount;
   final ScanType scanType;
+  final String ssid;
+  final String bssid;
+  final String subnetMask;
 
   AuditSession({
     required this.id,
@@ -13,38 +16,51 @@ class AuditSession {
     required this.date,
     required this.deviceCount,
     required this.scanType,
+    required this.ssid,
+    required this.bssid,
+    required this.subnetMask,
   });
 
-  // static method
-
   static AuditSession fromJson(Map<String, dynamic> json) {
-    assert(json['id'] is String);
-    assert(json['profileName'] is String);
-    assert(json['date'] is String);
-    assert(json['deviceCount'] is int);
-    assert(json['scanType'] is String);
 
-    final date = DateTime.parse(json['date'] as String);
+    final id = json['id'] as String;
+    final profileName = json['profileName'] as String;
+    final dateStr = json['date'] as String;
+    final deviceCount = json['deviceCount'] as int;
+    final scanType = json['scanType'] as String;
+    final ssid = json['ssid'] as String? ?? 'Unknown';
+    final bssid = json['bssid'] as String? ?? 'Unknown';
+    final subnetMask = json['subnetMask'] as String? ?? '255.255.255.0';
 
-    ScanType type = ScanType.values.firstWhere(
-      (e) => e.name == json['scanType'],
+    final date = DateTime.parse(dateStr);
+    final type = ScanType.values.firstWhere(
+      (e) => e.name == scanType,
     );
 
     return AuditSession(
-      id: json['id'],
-      profileName: json['profileName'],
+      id: id,
+      profileName: profileName,
       date: date,
-      deviceCount: json['deviceCount'],
+      deviceCount: deviceCount,
       scanType: type,
+      ssid: ssid,
+      bssid: bssid,
+      subnetMask: subnetMask,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    //convert AuditSession to json
+
     'id': id,
     'profileName': profileName,
     'date': date.toIso8601String(),
     'deviceCount': deviceCount,
     'scanType': scanType.name,
+    'ssid': ssid,
+    'bssid': bssid,
+    'subnetMask': subnetMask,
   };
+
+  @override
+  String toString() => 'AuditSession(id: $id, profile: $profileName, devices: $deviceCount, ssid: $ssid, bssid: $bssid, subnetMask: $subnetMask)';
 }
