@@ -204,7 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       AsyncStatus.error => Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(_sessions.error!, style: TextStyle(color: AppTheme.error)),
+          child: Text(_sessions.error ?? 'Unknown error', style: TextStyle(color: AppTheme.error)),
         ),
       ),
       AsyncStatus.success => _buildSessionList(),
@@ -212,7 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSessionList() {
-    final sessions = _sessions.value!;
+    final sessions = _sessions.value ?? [];
     if (sessions.isEmpty) {
       return const Center(
         child: Padding(

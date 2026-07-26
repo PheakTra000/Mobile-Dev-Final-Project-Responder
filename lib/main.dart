@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/signup_screen.dart';
@@ -13,45 +12,11 @@ void main() {
   runApp(const ResponderApp());
 }
 
-class ResponderApp extends StatefulWidget {
+class ResponderApp extends StatelessWidget {
   const ResponderApp({super.key});
 
   @override
-  State<ResponderApp> createState() => _ResponderAppState();
-}
-
-class _ResponderAppState extends State<ResponderApp> {
-  String? _initialRoute;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuth();
-  }
-
-  Future<void> _checkAuth() async {
-    const storage = FlutterSecureStorage();
-    final token = await storage.read(key: 'jwt');
-    final guest = await storage.read(key: 'guest');
-    if (!mounted) return;
-    final isLoggedIn = (token != null && token.isNotEmpty) || guest == 'true';
-    setState(() {
-      _initialRoute = isLoggedIn ? '/dashboard' : '/login';
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_initialRoute == null) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: AppTheme.background),
-        home: const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
-
     return MaterialApp(
       title: 'Responder',
       debugShowCheckedModeBanner: false,
@@ -80,7 +45,7 @@ class _ResponderAppState extends State<ResponderApp> {
           ),
         ),
       ),
-      initialRoute: _initialRoute,
+      initialRoute: '/login',
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/login':
@@ -92,12 +57,12 @@ class _ResponderAppState extends State<ResponderApp> {
           case '/form':
             return MaterialPageRoute(builder: (_) => const FormScreen());
           case '/scanning':
-            final args = settings.arguments as Map<String, dynamic>;
+            final args = settings.arguments as Map<String, dynamic>?;
             return MaterialPageRoute(
               builder: (_) => ScanningScreen(
-                profileName: args['profileName'] as String,
-                scanType: args['scanType'] as ScanType,
-                sessionId: args['sessionId'] as String?,
+                profileName: args?['profileName'] as String? ?? 'Scan',
+                scanType: args?['scanType'] as ScanType? ?? ScanType.quick,
+                sessionId: args?['sessionId'] as String?,
               ),
             );
           default:
