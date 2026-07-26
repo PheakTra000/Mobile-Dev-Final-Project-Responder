@@ -34,11 +34,12 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = '';
     });
     try {
-      final token = await _api.login(
+      final result = await _api.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
-      await _storage.write(key: 'jwt', value: token);
+      await _storage.write(key: 'jwt', value: result['token']);
+      await _storage.write(key: 'uid', value: result['uid']);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/dashboard');
     } catch (e) {

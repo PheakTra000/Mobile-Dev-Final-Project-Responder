@@ -53,8 +53,9 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      final token = await _api.register(email, password);
-      await _storage.write(key: 'jwt', value: token);
+      final result = await _api.register(email, password);
+      await _storage.write(key: 'jwt', value: result['token']);
+      await _storage.write(key: 'uid', value: result['uid']);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/dashboard');
     } catch (e) {
