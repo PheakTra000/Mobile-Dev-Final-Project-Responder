@@ -1,0 +1,14 @@
+.dart_tool/
+build/
+.kilo/
+lib.zip
+.idea/
+.flutter-plugins-dependencies
+.metadata
+android/.gradle/
+android/build/
+android/local.properties
+*.iml
+backend/.env
+backend/node_modules/
+backend/responder-*.json
