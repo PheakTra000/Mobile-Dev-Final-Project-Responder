@@ -20,12 +20,23 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   AsyncData<List<AuditSession>> _sessions = AsyncData.notstarted();
+  String? _uid;
 
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    const storage = FlutterSecureStorage();
+    final uid = await storage.read(key: 'uid');
+    if (!mounted) return;
+    setState(() => _uid = uid);
     _loadHistory();
   }
+
+  LocalStorage get _ls => LocalStorage(userId: _uid);
 
   Future<void> _loadHistory() async {
     setState(() {
@@ -33,7 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     try {
-      final sessions = await LocalStorage().loadSessions();
+      final sessions = await _ls.loadSessions();
       if (!mounted) return;
       setState(() {
         _sessions = AsyncData.success(sessions);
@@ -70,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () async {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
-                await LocalStorage().renameSession(session.id, name);
+                await _ls.renameSession(session.id, name);
                 if (!mounted || !ctx.mounted) return;
                 Navigator.pop(ctx);
                 _loadHistory();
@@ -100,7 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await LocalStorage().deleteSession(session.id);
+              await _ls.deleteSession(session.id);
               if (!mounted || !ctx.mounted) return;
               Navigator.pop(ctx);
               _loadHistory();
@@ -233,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () {
             Navigator.pushNamed(context, '/scanning', arguments: {
               'profileName': session.profileName,
-              'scanType': session.scanType,
+              'scanType': session.scanType.name,
               'sessionId': session.id,
             }).then((_) => _loadHistory());
           },

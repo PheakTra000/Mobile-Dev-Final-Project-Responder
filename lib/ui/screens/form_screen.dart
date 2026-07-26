@@ -15,6 +15,13 @@ class FormScreen extends StatefulWidget {
 
 class _FormScreenState extends State<FormScreen> {
   ScanType _selectedType = ScanType.quick;
+  final _nameController = TextEditingController(text: 'Untitled Scan');
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +35,36 @@ class _FormScreenState extends State<FormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 12),
+            Text('Scan Title',
+                style: TextStyle(
+                    color: _textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameController,
+              style: const TextStyle(color: _textPrimary),
+              decoration: const InputDecoration(
+                hintText: 'Enter a name for this scan',
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text('Scan Type',
+                style: TextStyle(
+                    color: _textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
             _ScanOptionTile(
               title: 'Quick',
-              description: 'Well known port only, really fast.',
+              description: 'Well known ports only, really fast.',
               isSelected: _selectedType == ScanType.quick,
               onTap: () => setState(() => _selectedType = ScanType.quick),
             ),
             const SizedBox(height: 12),
             _ScanOptionTile(
               title: 'Deep',
-              description: 'Extend port range, slower better.',
+              description: 'Extended port range, slower but thorough.',
               isSelected: _selectedType == ScanType.deep,
               onTap: () => setState(() => _selectedType = ScanType.deep),
             ),
@@ -46,8 +73,19 @@ class _FormScreenState extends State<FormScreen> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/scanning'),
+                onPressed: () {
+                  final name = _nameController.text.trim();
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter a scan title')),
+                    );
+                    return;
+                  }
+                  Navigator.pushNamed(context, '/scanning', arguments: {
+                    'profileName': name,
+                    'scanType': _selectedType.name,
+                  });
+                },
                 child: const Text('Start New Scan'),
               ),
             ),

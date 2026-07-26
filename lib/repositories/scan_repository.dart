@@ -2,13 +2,27 @@ import 'dart:io';
 
 import 'package:network_info_plus/network_info_plus.dart';
 
-import '../data/local_storage.dart';
 import '../models/audit_session.dart';
 import '../models/device_with_ports.dart';
 import '../models/network_device.dart';
 import '../models/exposed_port.dart';
 
-const _quickPorts = [21, 22, 23, 25, 53, 80, 110, 143, 443, 993, 995, 3389, 8080, 8443];
+const _quickPorts = [
+  21,
+  22,
+  23,
+  25,
+  53,
+  80,
+  110,
+  143,
+  443,
+  993,
+  995,
+  3389,
+  8080,
+  8443,
+];
 
 const _deepPorts = [
   // Well-known (0-1023) — IANA assigned
@@ -72,7 +86,10 @@ const _serviceMap = {
   8920: 'ES-Secure', 8983: 'Solr', 8984: 'Solr-Secure', 9000: 'SonarQube',
   9001: 'PHP-FPM', 9042: 'Cassandra', 9090: 'Prometheus', 9091: 'Transmission',
   9099: 'K8s-Dashboard', 9100: 'Node-Exporter', 9115: 'Redis-Exporter',
-  9200: 'Elasticsearch', 9300: 'ES-Transport', 9418: 'Git', 9443: 'K8s-Dashboard-S',
+  9200: 'Elasticsearch',
+  9300: 'ES-Transport',
+  9418: 'Git',
+  9443: 'K8s-Dashboard-S',
   9999: 'Nagios', 10000: 'Webmin', 10250: 'Kubelet-API', 10255: 'Kubelet-RO',
   10443: 'HTTPS-Alt-2', 11211: 'Memcached', 12345: 'NetBus',
   15000: 'Webmin-1', 19132: 'MCPE', 19888: 'ES-Debug', 20000: 'VoIP',
@@ -82,20 +99,64 @@ const _serviceMap = {
   50070: 'HDFS', 60000: 'Fortinet',
 };
 
-const _highRisk = {21, 23, 135, 139, 445, 1433, 2375, 2376, 3389, 5900, 5985, 5986};
+const _highRisk = {
+  21,
+  23,
+  135,
+  139,
+  445,
+  1433,
+  2375,
+  2376,
+  3389,
+  5900,
+  5985,
+  5986,
+};
 const _mediumRisk = {
-  22, 25, 110, 143, 389, 465, 587, 993, 995, 1080, 1194, 1521, 1723,
-  1883, 2049, 3306, 4443, 5060, 5432, 5672, 5901, 6379, 6443, 8080,
-  8443, 8888, 9090, 9200, 9300, 11211, 27017, 27018, 50000,
+  22,
+  25,
+  110,
+  143,
+  389,
+  465,
+  587,
+  993,
+  995,
+  1080,
+  1194,
+  1521,
+  1723,
+  1883,
+  2049,
+  3306,
+  4443,
+  5060,
+  5432,
+  5672,
+  5901,
+  6379,
+  6443,
+  8080,
+  8443,
+  8888,
+  9090,
+  9200,
+  9300,
+  11211,
+  27017,
+  27018,
+  50000,
 };
 
 abstract class ScanRepository {
   Future<String> detectSubnet();
-  Future<List<NetworkDevice>> discoverDevices(String subnet,
-      {void Function(double progress)? onProgress});
+  Future<List<NetworkDevice>> discoverDevices(
+    String subnet, {
+    void Function(double progress)? onProgress,
+  });
   Future<List<ExposedPort>> checkPorts(NetworkDevice device, ScanType scanType);
   Future<AuditSession> runScan(String profileName, ScanType type);
-  Future<List<AuditSession>> getHistory();
 }
 
 class ScanRepositoryImpl implements ScanRepository {
@@ -193,42 +254,59 @@ class ScanRepositoryImpl implements ScanRepository {
   }
 
   Future<NetworkDevice?> _pingHost(String ip) async {
+    bool alive = false;
     try {
-      final socket = await Socket.connect(ip, 80,
-          timeout: const Duration(milliseconds: 500));
-      socket.destroy();
+      final result = await Process.run('ping', ['-c', '1', '-W', '2', ip]);
+      alive = result.exitCode == 0;
+    } catch (_) {}
 
-      String hostname = ip;
+    if (!alive) {
       try {
-        final lookup = await InternetAddress.lookup(ip);
-        if (lookup.isNotEmpty && lookup.first.host != ip) {
-          hostname = lookup.first.host;
-        }
+        final socket = await Socket.connect(
+          ip,
+          80,
+          timeout: const Duration(milliseconds: 500),
+        );
+        socket.destroy();
+        alive = true;
       } catch (_) {}
-
-      return NetworkDevice(ip: ip, mac: 'N/A', hostname: hostname);
-    } catch (_) {
-      return null;
     }
+
+    if (!alive) return null;
+
+    String hostname = ip;
+    try {
+      final lookup = await InternetAddress.lookup(ip);
+      if (lookup.isNotEmpty && lookup.first.host != ip) {
+        hostname = lookup.first.host;
+      }
+    } catch (_) {}
+
+    return NetworkDevice(ip: ip, mac: 'N/A', hostname: hostname);
   }
 
   @override
   Future<List<ExposedPort>> checkPorts(
-      NetworkDevice device, ScanType scanType) async {
+    NetworkDevice device,
+    ScanType scanType,
+  ) async {
     final portsToScan = scanType == ScanType.deep ? _deepPorts : _quickPorts;
 
     final futures = portsToScan.map((port) async {
       try {
-        final socket = await Socket.connect(device.ip, port,
-            timeout: const Duration(seconds: 2));
+        final socket = await Socket.connect(
+          device.ip,
+          port,
+          timeout: const Duration(seconds: 2),
+        );
         socket.destroy();
 
         final service = _serviceMap[port] ?? 'Unknown';
         final risk = _highRisk.contains(port)
             ? RiskLevel.high
             : _mediumRisk.contains(port)
-                ? RiskLevel.medium
-                : RiskLevel.low;
+            ? RiskLevel.medium
+            : RiskLevel.low;
         return ExposedPort(port: port, serviceType: service, riskLevel: risk);
       } catch (_) {
         return null;
@@ -247,7 +325,10 @@ class ScanRepositoryImpl implements ScanRepository {
 
     const batchSize = 10;
     for (var i = 0; i < devices.length; i += batchSize) {
-      final batch = devices.sublist(i, (i + batchSize).clamp(0, devices.length));
+      final batch = devices.sublist(
+        i,
+        (i + batchSize).clamp(0, devices.length),
+      );
       final batchResults = await Future.wait(
         batch.map((device) async {
           final ports = await checkPorts(device, type);
@@ -265,10 +346,5 @@ class ScanRepositoryImpl implements ScanRepository {
       scanType: type,
       devices: results,
     );
-  }
-
-  @override
-  Future<List<AuditSession>> getHistory() async {
-    return LocalStorage().loadSessions();
   }
 }

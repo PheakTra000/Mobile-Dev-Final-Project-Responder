@@ -58,10 +58,11 @@ class ResponderApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const FormScreen());
           case '/scanning':
             final args = settings.arguments as Map<String, dynamic>?;
+            final scanTypeStr = args?['scanType'] as String? ?? 'quick';
             return MaterialPageRoute(
               builder: (_) => ScanningScreen(
                 profileName: args?['profileName'] as String? ?? 'Scan',
-                scanType: args?['scanType'] as ScanType? ?? ScanType.quick,
+                scanType: scanTypeStr == 'deep' ? ScanType.deep : ScanType.quick,
                 sessionId: args?['sessionId'] as String?,
               ),
             );

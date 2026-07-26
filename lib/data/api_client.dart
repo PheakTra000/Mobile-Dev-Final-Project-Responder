@@ -10,7 +10,7 @@ class ApiClient {
 
   ApiClient({required this.baseUrl});
 
-  Future<String> login(String email, String password) async {
+  Future<Map<String, String>> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
@@ -21,13 +21,16 @@ class ApiClient {
         throw Exception(jsonDecode(response.body)['error']);
       }
       final data = jsonDecode(response.body);
-      return data['token'] as String;
+      return {
+        'token': data['token'] as String,
+        'uid': data['uid'] as String,
+      };
     } on TimeoutException {
       throw Exception('Server is not responding. Please try again.');
     }
   }
 
-  Future<String> register(String email, String password) async {
+  Future<Map<String, String>> register(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
@@ -38,7 +41,10 @@ class ApiClient {
         throw Exception(jsonDecode(response.body)['error']);
       }
       final data = jsonDecode(response.body);
-      return data['token'] as String;
+      return {
+        'token': data['token'] as String,
+        'uid': data['uid'] as String,
+      };
     } on TimeoutException {
       throw Exception('Server is not responding. Please try again.');
     }

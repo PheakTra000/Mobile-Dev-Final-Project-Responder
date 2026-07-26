@@ -8,7 +8,7 @@ class AuditSessionDto {
       profileName: json['profileName'] as String,
       date: DateTime.parse(json['date'] as String),
       deviceCount: json['deviceCount'] as int,
-      scanType: json['scanType'] == 'Deep' ? ScanType.deep : ScanType.quick,
+      scanType: json['scanType'] == 'deep' ? ScanType.deep : ScanType.quick,
       devices: json['devices'] != null
           ? (json['devices'] as List)
               .map((d) => DeviceWithPortsDto.fromJson(d as Map<String, dynamic>))

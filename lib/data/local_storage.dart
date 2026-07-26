@@ -7,9 +7,18 @@ import '../models/audit_session.dart';
 import 'dto/audit_session_dto.dart';
 
 class LocalStorage {
+  final String? userId;
+
+  LocalStorage({this.userId});
+
+  String get _subDir {
+    final id = userId;
+    return (id != null && id.isNotEmpty) ? 'sessions/$id' : 'sessions';
+  }
+
   Future<File> _sessionFile(String id) async {
     final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/sessions/$id.json');
+    return File('${dir.path}/$_subDir/$id.json');
   }
 
   Future<void> saveSession(AuditSession session) async {
@@ -20,7 +29,7 @@ class LocalStorage {
 
   Future<List<AuditSession>> loadSessions() async {
     final dir = await getApplicationDocumentsDirectory();
-    final sessionsDir = Directory('${dir.path}/sessions');
+    final sessionsDir = Directory('${dir.path}/$_subDir');
     if (!await sessionsDir.exists()) return [];
     final files = await sessionsDir.list().where((e) => e is File).toList();
     final sessions = <AuditSession>[];
@@ -53,5 +62,13 @@ class LocalStorage {
       devices: session.devices,
     );
     await file.writeAsString(jsonEncode(AuditSessionDto.toJson(updated)));
+  }
+
+  Future<void> deleteAll() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final sessionsDir = Directory('${dir.path}/$_subDir');
+    if (await sessionsDir.exists()) {
+      await sessionsDir.delete(recursive: true);
+    }
   }
 }

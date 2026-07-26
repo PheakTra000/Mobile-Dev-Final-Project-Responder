@@ -36,10 +36,19 @@ class _ScanningScreenState extends State<ScanningScreen> {
   List<DeviceWithPorts> _results = [];
   bool _isScanComplete = false;
   bool _hasError = false;
+  String? _uid;
 
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    const storage = FlutterSecureStorage();
+    final uid = await storage.read(key: 'uid');
+    if (!mounted) return;
+    setState(() => _uid = uid);
     if (widget.sessionId != null) {
       _loadSessionDetail();
     } else {
@@ -47,12 +56,14 @@ class _ScanningScreenState extends State<ScanningScreen> {
     }
   }
 
+  LocalStorage get _ls => LocalStorage(userId: _uid);
+
   Future<void> _loadSessionDetail() async {
     setState(() {
       _status = 'Loading scan results...';
     });
 
-    final sessions = await LocalStorage().loadSessions();
+    final sessions = await _ls.loadSessions();
     final session = sessions.firstWhere(
       (s) => s.id == widget.sessionId,
       orElse: () => AuditSession(
@@ -158,7 +169,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
       devices: results,
     );
 
-    await LocalStorage().saveSession(session);
+    await _ls.saveSession(session);
 
     try {
       const storage = FlutterSecureStorage();
