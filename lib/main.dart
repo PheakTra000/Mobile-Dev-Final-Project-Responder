@@ -83,7 +83,8 @@ class _AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<_AuthGate> {
-  String? _token;
+  bool _checked = false;
+  String _token = '';
 
   @override
   void initState() {
@@ -94,16 +95,19 @@ class _AuthGateState extends State<_AuthGate> {
   Future<void> _checkSession() async {
     final jwt = await const FlutterSecureStorage().read(key: 'jwt');
     if (!mounted) return;
-    setState(() => _token = jwt);
+    setState(() {
+      _token = jwt ?? '';
+      _checked = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_token == null) {
+    if (!_checked) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    return _token!.isNotEmpty ? const DashboardScreen() : const LoginScreen();
+    return _token.isNotEmpty ? const DashboardScreen() : const LoginScreen();
   }
 }
