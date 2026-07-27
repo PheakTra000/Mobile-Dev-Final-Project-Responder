@@ -85,7 +85,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
 
   Future<void> _startScan() async {
     try {
-      final repo = ScanRepositoryImpl();
+      final repo = ScanRepository();
 
       setState(() {
         _hasError = false;

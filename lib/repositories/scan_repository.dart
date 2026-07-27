@@ -149,17 +149,7 @@ const _mediumRisk = {
   50000,
 };
 
-abstract class ScanRepository {
-  Future<String> detectSubnet();
-  Future<List<NetworkDevice>> discoverDevices(
-    String subnet, {
-    void Function(double progress)? onProgress,
-  });
-  Future<List<ExposedPort>> checkPorts(NetworkDevice device, ScanType scanType);
-  Future<AuditSession> runScan(String profileName, ScanType type);
-}
-
-class ScanRepositoryImpl implements ScanRepository {
+class ScanRepository {
   Future<int> _readSubnetMask(String wifiIp) async {
     try {
       final file = File('/proc/net/route');
