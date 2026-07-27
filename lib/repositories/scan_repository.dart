@@ -198,7 +198,6 @@ class ScanRepository {
     return '${(ip >> 24) & 0xFF}.${(ip >> 16) & 0xFF}.${(ip >> 8) & 0xFF}.${ip & 0xFF}';
   }
 
-  @override
   Future<String> detectSubnet() async {
     try {
       final info = NetworkInfo();
@@ -211,7 +210,6 @@ class ScanRepository {
     return '192.168.1.0/24';
   }
 
-  @override
   Future<List<NetworkDevice>> discoverDevices(
     String subnet, {
     void Function(double progress)? onProgress,
@@ -275,7 +273,6 @@ class ScanRepository {
     return NetworkDevice(ip: ip, mac: 'N/A', hostname: hostname);
   }
 
-  @override
   Future<List<ExposedPort>> checkPorts(
     NetworkDevice device,
     ScanType scanType,
@@ -307,7 +304,6 @@ class ScanRepository {
     return results.whereType<ExposedPort>().toList();
   }
 
-  @override
   Future<AuditSession> runScan(String profileName, ScanType type) async {
     final subnet = await detectSubnet();
     final devices = await discoverDevices(subnet);
