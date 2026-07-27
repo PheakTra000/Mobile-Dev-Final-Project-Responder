@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/signup_screen.dart';
@@ -45,7 +46,7 @@ class ResponderApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/login',
+      home: const _AuthGate(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/login':
@@ -71,5 +72,38 @@ class ResponderApp extends StatelessWidget {
         }
       },
     );
+  }
+}
+
+class _AuthGate extends StatefulWidget {
+  const _AuthGate();
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  String? _token;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final jwt = await const FlutterSecureStorage().read(key: 'jwt');
+    if (!mounted) return;
+    setState(() => _token = jwt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_token == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return _token!.isNotEmpty ? const DashboardScreen() : const LoginScreen();
   }
 }
