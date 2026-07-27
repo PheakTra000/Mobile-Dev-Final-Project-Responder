@@ -12,3 +12,7 @@ android/local.properties
 backend/.env
 backend/node_modules/
 backend/responder-*.json
+# Local docs
+CODE_FLOW.md
+PROJECT_FLOW.md
+RESPONDER_FLOW.md
