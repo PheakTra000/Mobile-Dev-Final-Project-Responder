@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../data/api_client.dart';
 import '../../data/async_data.dart';
 import '../../data/local_storage.dart';
 import '../../models/audit_session.dart';
@@ -44,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     try {
-      final sessions = await _ls.loadSessions();
+      final sessions = await ApiClient.instance.fetchSessions();
       if (!mounted) return;
       setState(() {
         _sessions = AsyncData.success(sessions);

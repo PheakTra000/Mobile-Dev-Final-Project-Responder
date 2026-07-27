@@ -63,7 +63,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
       _status = 'Loading scan results...';
     });
 
-    final sessions = await _ls.loadSessions();
+    final sessions = await ApiClient.instance.fetchSessions();
     final session = sessions.firstWhere(
       (s) => s.id == widget.sessionId,
       orElse: () => AuditSession(
