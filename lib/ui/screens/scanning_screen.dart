@@ -63,24 +63,43 @@ class _ScanningScreenState extends State<ScanningScreen> {
       _status = 'Loading scan results...';
     });
 
-    final sessions = await ApiClient.instance.fetchSessions();
-    final session = sessions.firstWhere(
-      (s) => s.id == widget.sessionId,
-      orElse: () => AuditSession(
-        id: '',
-        profileName: '',
-        date: DateTime.now(),
-        deviceCount: 0,
-        scanType: ScanType.quick,
-      ),
-    );
+    final cached = await _ls.loadSessions();
+    final cachedSession = cached.where((s) => s.id == widget.sessionId).firstOrNull;
+    if (cachedSession != null && mounted) {
+      setState(() {
+        _results = cachedSession.devices ?? [];
+        _progress = 1.0;
+        _status = '${_results.length} devices found';
+        _isScanComplete = true;
+      });
+      return;
+    }
 
-    setState(() {
-      _results = session.devices ?? [];
-      _progress = 1.0;
-      _status = '${_results.length} devices found';
-      _isScanComplete = true;
-    });
+    try {
+      final sessions = await ApiClient.instance.fetchSessions();
+      final session = sessions.firstWhere(
+        (s) => s.id == widget.sessionId,
+        orElse: () => AuditSession(
+          id: '', profileName: '', date: DateTime.now(),
+          deviceCount: 0, scanType: ScanType.quick,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        _results = session.devices ?? [];
+        _progress = 1.0;
+        _status = '${_results.length} devices found';
+        _isScanComplete = true;
+      });
+      for (final s in sessions) { await _ls.saveSession(s); }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Failed to load: $e';
+        _isScanComplete = true;
+        _hasError = true;
+      });
+    }
   }
 
   Future<void> _startScan() async {

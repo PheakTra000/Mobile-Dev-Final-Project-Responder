@@ -40,21 +40,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   LocalStorage get _ls => LocalStorage(userId: _uid);
 
   Future<void> _loadHistory() async {
-    setState(() {
-      _sessions = AsyncData.loading();
-    });
+    final cached = await _ls.loadSessions();
+    if (cached.isNotEmpty && mounted) {
+      setState(() { _sessions = AsyncData.success(cached); });
+    } else {
+      setState(() { _sessions = AsyncData.loading(); });
+    }
 
     try {
-      final sessions = await ApiClient.instance.fetchSessions();
+      final fresh = await ApiClient.instance.fetchSessions();
       if (!mounted) return;
-      setState(() {
-        _sessions = AsyncData.success(sessions);
-      });
+      setState(() { _sessions = AsyncData.success(fresh); });
+      for (final s in fresh) { await _ls.saveSession(s); }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _sessions = AsyncData.error(e.toString());
-      });
+      if (cached.isEmpty) {
+        setState(() { _sessions = AsyncData.error(e.toString()); });
+      }
     }
   }
 
